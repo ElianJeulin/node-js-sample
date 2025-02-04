@@ -1,18 +1,20 @@
 version: 2.1
 
 executors:
-  docker-executor:
-    docker:
-      - image: circleci/node:14
+  vm-executor:
+    docker: []  # Aucun conteneur Docker n'est lancé, car on utilise la VM directement.
     working_directory: ~/app
 
 jobs:
   build:
-    executor: docker-executor
+    executor: vm-executor
     steps:
       - checkout
 
-      - setup_remote_docker
+      # Vérifie si Docker est installé et prêt à l'emploi sur la VM.
+      - run:
+          name: Check Docker version
+          command: docker --version
 
       - run:
           name: Build Docker image
