@@ -1,0 +1,47 @@
+version: 2.1
+
+executors:
+  vm-executor:
+    machine: true
+    working_directory: ~/app
+
+jobs:
+  build:
+    executor: vm-executor
+    steps:
+      - checkout
+
+      - run:
+          name: Check Docker version
+          command: docker --version
+
+      - run:
+          name: Build Docker image
+          command: docker build -t my-node-app .
+
+      - run:
+          name: Authenticate with Docker Hub using token
+          command: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+      - run:
+          name: Tag and Push Docker image
+          command: |
+            docker tag my-node-app $DOCKERHUB_USERNAME/my-node-app:latest
+            docker push $DOCKERHUB_USERNAME/my-node-app:latest
+
+      - run:
+          name: Run the Docker container
+          command: |
+            docker run -d -p 8080:8080 my-node-app
+
+      - run:
+          name: Test if Docker container is responding on the / route
+          command: |
+            sleep 5 
+            curl --fail http://127.0.0.1:8080/ || exit 1  
+
+workflows:
+  version: 2
+  build_and_push:
+    jobs:
+      - build
