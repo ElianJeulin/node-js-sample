@@ -28,6 +28,17 @@ jobs:
             docker tag my-node-app $DOCKERHUB_USERNAME/my-node-app:latest
             docker push $DOCKERHUB_USERNAME/my-node-app:latest
 
+      - run:
+          name: Run the Docker container
+          command: |
+            docker run -d -p 8080:8080 my-node-app
+
+      - run:
+          name: Test if Docker container is responding on the / route
+          command: |
+            sleep 5  
+            curl --fail http://localhost:8080/ || exit 1 
+
 workflows:
   version: 2
   build_and_push:
