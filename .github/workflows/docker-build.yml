@@ -1,0 +1,39 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Docker version
+        run: docker --version
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t my-node-app .
+
+      - name: Tag and Push Docker image
+        run: |
+          docker tag my-node-app ${{ secrets.DOCKERHUB_USERNAME }}/my-node-app:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-node-app:latest
+
+      - name: Run the Docker container
+        run: docker run -d -p 8080:8080 my-node-app
+
+      - name: Test if Docker container is responding on the / route
+        run: |
+          sleep 5
+          curl --fail http://127.0.0.1:8080/ || exit 1
