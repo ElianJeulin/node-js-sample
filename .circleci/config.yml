@@ -2,7 +2,7 @@ version: 2.1
 
 executors:
   vm-executor:
-    docker: []  # Aucun conteneur Docker n'est lancé, car on utilise la VM directement.
+    machine: true
     working_directory: ~/app
 
 jobs:
@@ -11,7 +11,6 @@ jobs:
     steps:
       - checkout
 
-      # Vérifie si Docker est installé et prêt à l'emploi sur la VM.
       - run:
           name: Check Docker version
           command: docker --version
@@ -38,8 +37,8 @@ jobs:
       - run:
           name: Test if Docker container is responding on the / route
           command: |
-            sleep 5  
-            curl --fail http://127.0.0.1:8080/ || exit 1 
+            sleep 5 
+            curl --fail http://127.0.0.1:8080/ || exit 1  
 
 workflows:
   version: 2
