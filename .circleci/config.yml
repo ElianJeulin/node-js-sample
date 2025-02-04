@@ -1,0 +1,36 @@
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/node:18
+    working_directory: ~/app
+
+jobs:
+  build:
+    executor: docker-executor
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: 20.10.14
+
+      - run:
+          name: Build Docker image
+          command: docker build -t my-node-app .
+
+      - run:
+          name: Authenticate with Docker Hub using token
+          command: echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+      - run:
+          name: Tag and Push Docker image
+          command: |
+            docker tag my-node-app $DOCKERHUB_USERNAME/my-node-app:latest
+            docker push $DOCKERHUB_USERNAME/my-node-app:latest
+
+workflows:
+  version: 2
+  build_and_push:
+    jobs:
+      - build
